@@ -1,5 +1,5 @@
 const express = require("express");
-var bodyParser = require('body-parser')
+var bodyParser = require("body-parser");
 
 const app = express();
 app.use(express.json());
@@ -8,11 +8,10 @@ const repl = require("repl");
 const replServer = repl.start();
 
 // create application/json parser
-let jsonParser = bodyParser.json()
+let jsonParser = bodyParser.json();
 
 // create application/x-www-form-urlencoded parser
-let urlencodedParser = bodyParser.urlencoded({ extended: false })
-
+let urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 let notes = [
   {
@@ -37,12 +36,14 @@ let notes = [
   },
 ];
 
-
-
 const generatedId = () => {
   const maxId = notes.length > 0 ? Math.max(...notes.map((n) => n.id)) : 0;
   return maxId + 1;
 };
+
+const nameExists = name => {
+  return notes.some(n => n.name === name);
+}
 
 app.get("/api/persons", (request, response) => {
   response.json(notes);
@@ -57,7 +58,7 @@ app.get("/api/persons/:id", (request, response) => {
   if (note) {
     response.json(note);
   } else {
-    response.status(404).json({ message: "There is no note with such id"})
+    response.status(404).json({ message: "There is no note with such id" });
   }
 });
 
@@ -68,25 +69,34 @@ app.delete("/api/persons/:id", (request, response) => {
   response.status(204).end();
 });
 
-app.post("/api/persons", jsonParser, (request, response)=>{
+app.post("/api/persons", jsonParser, (request, response) => {
   const body = request.body;
   console.log(body);
 
   if (!body) {
-    return response.status(400).json({ 
-      error: 'content missing' 
+    return response.status(400).json({
+      error: "content missing",
+    });
+  }
+  if (!body.name || !body.number) {
+    return response.status(400).json({
+      error: "name and number must be not empty string"
+    })
+  }
+  if (nameExists(body.name)) {
+    return response.status(400).json({
+      error: "name must be unique."
     })
   }
 
   const person = {
     id: generatedId(),
     name: body.name,
-    number: body.number
-  }
-
-  notes = notes.concat(person)
-  response.json(person)
-})
+    number: body.number,
+  };
+  notes = notes.concat(person);
+  response.json(person);
+});
 
 app.get("/info", (request, response) => {
   const peopleNumber = notes.length;
@@ -97,10 +107,6 @@ app.get("/info", (request, response) => {
   response.send(ans);
 });
 
-
-
-
-
 const PORT = 3001;
 app.listen(PORT);
-console.log(`Server running on port ${PORT}`)
+console.log(`Server running on port ${PORT}`);
