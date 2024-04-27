@@ -1,10 +1,18 @@
 const express = require("express");
+var bodyParser = require('body-parser')
 
 const app = express();
 app.use(express.json());
 
 const repl = require("repl");
 const replServer = repl.start();
+
+// create application/json parser
+let jsonParser = bodyParser.json()
+
+// create application/x-www-form-urlencoded parser
+let urlencodedParser = bodyParser.urlencoded({ extended: false })
+
 
 let notes = [
   {
@@ -29,6 +37,13 @@ let notes = [
   },
 ];
 
+
+
+const generatedId = () => {
+  const maxId = notes.length > 0 ? Math.max(...notes.map((n) => n.id)) : 0;
+  return maxId + 1;
+};
+
 app.get("/api/persons", (request, response) => {
   response.json(notes);
 });
@@ -52,6 +67,26 @@ app.delete("/api/persons/:id", (request, response) => {
 
   response.status(204).end();
 });
+
+app.post("/api/persons", jsonParser, (request, response)=>{
+  const body = request.body;
+  console.log(body);
+
+  if (!body) {
+    return response.status(400).json({ 
+      error: 'content missing' 
+    })
+  }
+
+  const person = {
+    id: generatedId(),
+    name: body.name,
+    number: body.number
+  }
+
+  notes = notes.concat(person)
+  response.json(person)
+})
 
 app.get("/info", (request, response) => {
   const peopleNumber = notes.length;
