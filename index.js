@@ -7,32 +7,55 @@ const repl = require("repl");
 const replServer = repl.start();
 
 let notes = [
-    { 
-        "id": 1,
-        "name": "Arto Hellas", 
-        "number": "040-123456"
-      },
-      { 
-        "id": 2,
-        "name": "Ada Lovelace", 
-        "number": "39-44-5323523"
-      },
-      { 
-        "id": 3,
-        "name": "Dan Abramov", 
-        "number": "12-43-234345"
-      },
-      { 
-        "id": 4,
-        "name": "Mary Poppendieck", 
-        "number": "39-23-6423122"
-      }
-]
+  {
+    id: 1,
+    name: "Arto Hellas",
+    number: "040-123456",
+  },
+  {
+    id: 2,
+    name: "Ada Lovelace",
+    number: "39-44-5323523",
+  },
+  {
+    id: 3,
+    name: "Dan Abramov",
+    number: "12-43-234345",
+  },
+  {
+    id: 4,
+    name: "Mary Poppendieck",
+    number: "39-23-6423122",
+  },
+];
 
-app.get("/api/persons", (request, response)=>{
-    response.json(notes)
-})
+app.get("/api/persons", (request, response) => {
+  response.json(notes);
+});
 
-const PORT = 3001
-app.listen(PORT)
-console.log(`Server running on port ${PORT}`);
+app.get("/info", (request, response) => {
+  const peopleNumber = notes.length;
+  const date = new Date();
+  const ans = `<p>Phonebook has info for ${peopleNumber} people.<br/><br/>
+                  ${date}
+              </p>`;
+  response.send(ans);
+});
+
+app.get("api/persons/:id", (request, response) => {
+  const id = Number(request.params.id);
+  console.log(id);
+  const note = notes.find((x) => x.id === id);
+  console.log(note);
+
+  if (note) {
+    response.json(note);
+  } else {
+    response.statusMessage = "There is no note with such id";
+    response.status(404).end();
+  }
+});
+
+const PORT = 3001;
+app.listen(PORT);
+console.log(`Server running on port ${PORT}`)
