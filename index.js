@@ -1,17 +1,21 @@
 const express = require("express");
-var bodyParser = require("body-parser");
+const bodyParser = require("body-parser");
+const morgan = require('morgan');
+const cors = require('cors')
 
 const app = express();
 app.use(express.json());
+app.use(cors());
+app.use(morgan('tiny'));
 
 const repl = require("repl");
 const replServer = repl.start();
 
-// create application/json parser
-let jsonParser = bodyParser.json();
+// // create application/json parser
+// let jsonParser = bodyParser.json();
 
-// create application/x-www-form-urlencoded parser
-let urlencodedParser = bodyParser.urlencoded({ extended: false });
+// // create application/x-www-form-urlencoded parser
+// let urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 let notes = [
   {
@@ -69,7 +73,7 @@ app.delete("/api/persons/:id", (request, response) => {
   response.status(204).end();
 });
 
-app.post("/api/persons", jsonParser, (request, response) => {
+app.post("/api/persons", (request, response) => {
   const body = request.body;
   console.log(body);
 
@@ -97,6 +101,25 @@ app.post("/api/persons", jsonParser, (request, response) => {
   notes = notes.concat(person);
   response.json(person);
 });
+
+app.put("/api/persons/:id", (request, response) => {
+  const id = Number(request.params.id);
+  const body = request.body;
+  const updatedNote  = {
+    id: id,
+    name: body.name,
+    number: body.number
+  }
+
+  notes = notes.map((note) => {
+    if(note.id === id){
+      note = updatedNote
+    }
+    return note;
+});
+  response.json(updatedNote)
+});
+
 
 app.get("/info", (request, response) => {
   const peopleNumber = notes.length;
