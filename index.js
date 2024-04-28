@@ -6,7 +6,12 @@ const cors = require('cors')
 const app = express();
 app.use(express.json());
 app.use(cors());
-app.use(morgan('tiny'));
+
+morgan.token('body', req => {
+  return JSON.stringify(req.body)
+})
+app.use(morgan(':method :url :status :response-time - :total-time ms :body'));
+
 
 const repl = require("repl");
 const replServer = repl.start();
@@ -55,9 +60,9 @@ app.get("/api/persons", (request, response) => {
 
 app.get("/api/persons/:id", (request, response) => {
   const id = Number(request.params.id);
-  console.log(id);
+  // console.log(id);
   const note = notes.find((x) => x.id === id);
-  console.log(note);
+  // console.log(note);
 
   if (note) {
     response.json(note);
@@ -75,7 +80,7 @@ app.delete("/api/persons/:id", (request, response) => {
 
 app.post("/api/persons", (request, response) => {
   const body = request.body;
-  console.log(body);
+  // console.log(body);
 
   if (!body) {
     return response.status(400).json({
